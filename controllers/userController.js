@@ -2,14 +2,10 @@ const Twilio    = require("twilio");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 require('dotenv').config();   
-const accountSid = 'ACa418bf3ed4a3b7f324a44b1fab7a0b12';
-const authToken = '13c931a26b65aedc59549ad2b4e28f5b';
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_ACCOUNT_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
 
-const twilioClient = Twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
 
 function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -46,12 +42,11 @@ const resolvers = {
         try {
           // Capturamos la respuesta de Twilio
           const msg = await client.messages
-          .create({
-            from: 'whatsapp:+14155238886',
-              contentSid: 'HX229f5a04fd0510ce1b071852155d3e75',
-              contentVariables: '{"1":"409173"}',
-              to: 'whatsapp:+5213111636236'
-          })
+            .create({
+                from: 'whatsapp:+14155238886',
+                to: 'whatsapp:+5213112688611',
+                body: `¡Hola Otmar! Gracias por registrarte. Responde *SI* para confirmar tu cuenta.`  
+            })
       
           // Mostramos toda la respuesta en consola
           console.log("Twilio message response:", msg);
@@ -106,19 +101,20 @@ const resolvers = {
       await userModel.setVerificationCode(userId, code);
 
       try {
-        await twilioClient.messages.create({
-          from: "whatsapp:+14155238886",
-          to:   'whatsapp:+523111636236',
-          body: `Tu código de verificación es: ${code}`,
-        });
-        return { success: true, message: "Código enviado" };
+        await client.messages
+    .create({
+        from: 'whatsapp:+14155238886',
+        to: 'whatsapp:+5213112688611',
+        body: `¡Hola Otmar2! Gracias por registrarte. Responde *SI* para confirmar tu cuenta.`  
+    })
+    
+
       } catch (err) {
         console.error("Twilio error:", err);
         return { success: false, message: "Error al enviar código" };
       }
     },
 
-    // (You should also add this)
     verifyWhatsappCode: async (_, { userId, code }) => {
       const ok = userModel.verifyCode(userId, code);
       return { success: ok, message: ok ? "Verificado" : "Código inválido" };
