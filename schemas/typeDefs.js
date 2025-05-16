@@ -1,7 +1,6 @@
 const { gql } = require("apollo-server");
 
 const typeDefs = gql`
-  """Un usuario en el sistema"""
   type User {
     id: ID!
     name: String!
@@ -10,44 +9,38 @@ const typeDefs = gql`
     isVerified: Boolean!
   }
 
-  """Respuesta genérica para envíos de código y verificaciones"""
-  type VerificationResponse {
+  type AuthCode {
+    token: String
+    user: User
     success: Boolean!
     message: String!
   }
 
-  """Respuesta al crear un usuario por WhatsApp"""
-  type CreateUserResponse {
-    user: User!                
-    sent: Boolean!             
-    to: String!               
-    message: String          
+  type Query {
+    _empty: String
   }
 
-  type Query {
-    getUsers: [User!]!
-    getUser(id: ID!): User
+  type CreateUserResponse {
+    user: User
+    success: Boolean!
+    message: String!
   }
 
   type Mutation {
-    """Crea un usuario + dispara verificación por WhatsApp"""
-    createUser(
+    registerUser(
       name: String!
       email: String!
       phone: String!
-    ): CreateUserResponse!    
+    ): CreateUserResponse!
 
-    """Actualiza datos de usuario; si cambia phone, fuerza re-verificación"""
-    updateUser(
-      id: ID!
-      name: String
-      email: String
-      phone: String
-    ): User!
+    verifyCode(
+      userId: ID!
+      code: String!
+    ): AuthCode!
 
-    removeUser(id: ID!): User!
-    sendWhatsappVerification(userId: ID!): VerificationResponse!
-    verifyWhatsappCode(userId: ID!, code: String!): VerificationResponse!
+    login(
+      email: String!
+    ): AuthCode!
   }
 `;
 
